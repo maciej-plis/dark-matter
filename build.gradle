@@ -1,0 +1,30 @@
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
+    }
+}
+
+allprojects {
+    apply plugin: 'eclipse'
+    apply plugin: 'idea'
+}
+
+configure(subprojects) {
+    apply plugin: 'java-library'
+    apply plugin: 'kotlin'
+    sourceCompatibility = 17
+    compileJava {
+        options.incremental = true
+    }
+}
+
+subprojects {
+    version = '1.0.0'
+    ext.appName = 'DarkMatter'
+    repositories {
+        mavenCentral()
+    }
+}
