@@ -1,0 +1,9 @@
+required.png
+	size: 256, 256
+	repeat: none
+font11_gradient
+	bounds: 1, 67, 128, 128
+font8
+	bounds: 1, 1, 128, 64
+white
+	bounds: 131, 185, 10, 10

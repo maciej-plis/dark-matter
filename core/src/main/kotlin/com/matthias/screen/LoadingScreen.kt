@@ -1,26 +1,28 @@
 package com.matthias.screen
 
 import com.badlogic.gdx.Gdx
-import com.badlogic.gdx.scenes.scene2d.actions.Actions.*
-import com.badlogic.gdx.scenes.scene2d.ui.Image
+import com.badlogic.gdx.scenes.scene2d.actions.Actions.forever
 import com.badlogic.gdx.scenes.scene2d.ui.Label
+import com.badlogic.gdx.scenes.scene2d.ui.ProgressBar
 import com.badlogic.gdx.utils.Align.center
 import com.matthias.DarkMatterGame
 import com.matthias.assets.*
-import com.matthias.ui.LabelStyles.DEFAULT
+import com.matthias.common.fadeInOut
+import com.matthias.common.textSequence
 import com.matthias.ui.LabelStyles.GRADIENT
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
-import ktx.actors.plus
-import ktx.actors.plusAssign
 import ktx.async.KtxAsync
 import ktx.collections.gdxArrayOf
 import ktx.scene2d.*
 
 class LoadingScreen(game: DarkMatterGame) : ScreenBase(game) {
 
-    private lateinit var progressBar: Image
+    private lateinit var progressBar: ProgressBar
     private lateinit var touchToBeginLabel: Label
+    private lateinit var progressBarLabel: Label
+
+    private var loadingFinished = false
 
     override fun show() {
         val assetRefs = gdxArrayOf(
@@ -44,13 +46,14 @@ class LoadingScreen(game: DarkMatterGame) : ScreenBase(game) {
     }
 
     override fun render(delta: Float) {
-        if (assets.progress.isFinished && Gdx.input.justTouched() && game.containsScreen<GameScreen>()) {
+        if (loadingFinished && Gdx.input.justTouched()) {
             game.setScreen<GameScreen>()
             game.removeScreen<LoadingScreen>()
             dispose()
         }
 
-        progressBar.scaleX = assets.progress.percent
+        updateProgressBar()
+
         stage.run {
             viewport.apply()
             act()
@@ -60,43 +63,60 @@ class LoadingScreen(game: DarkMatterGame) : ScreenBase(game) {
 
     private fun assetsLoaded() {
         game.addScreen(GameScreen(game))
-        touchToBeginLabel += forever(sequence(fadeIn(0.5f) + fadeOut(0.5f)))
+
+        touchToBeginLabel.isVisible = true
+        setProgressBarAsLoaded()
+
+        loadingFinished = true
     }
 
     private fun setupUI() {
         stage.actors {
+
             table {
+                setFillParent(true)
+
                 defaults().fillX().expandX()
 
-                label("Loading Screen", GRADIENT.name) {
+                label("Dark Matter", GRADIENT.id) {
                     wrap = true
                     setAlignment(center)
                 }
 
-                row()
+                row().pad(5f)
 
-                touchToBeginLabel = label("Touch to Begin", DEFAULT.name) {
+                touchToBeginLabel = label("Touch to Begin") {
                     wrap = true
                     setAlignment(center)
-                    color.a = 0f
+                    addAction(forever(fadeInOut(0.5f, 0.5f)))
+                    isVisible = false
                 }
 
                 row()
 
-                stack { cell ->
-                    progressBar = image("life_bar") {
-                        scaleX = 0f
+                stack {
+                    progressBar = progressBar() {
+                        style.background.minHeight = 20f
+                        style.background.minWidth = 1f
+                        style.knob.minHeight = 20f
+                        style.knob.minWidth = 1f
                     }
-                    label("Loading...", DEFAULT.name) {
+                    progressBarLabel = label("Loading...") {
                         setAlignment(center)
+                        addAction(forever(textSequence(0.5f, "Loading.", "Loading..", "Loading...")))
                     }
-                    cell.padLeft(5f).padRight(5f)
                 }
-
-                setFillParent(true)
-                pack()
             }
         }
 //        stage.isDebugAll = true
+    }
+
+    private fun updateProgressBar() {
+        progressBar.value = assets.progress.percent
+    }
+
+    private fun setProgressBarAsLoaded() {
+        progressBarLabel.clearActions()
+        progressBarLabel.setText("loaded")
     }
 }

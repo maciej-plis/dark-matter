@@ -26,7 +26,8 @@ enum class TextureAtlasAsset(
     val descriptor: AssetDescriptor<TextureAtlas> = AssetDescriptor("$directory/$fileName")
 ) {
     GAME_GRAPHICS("graphics.atlas", "textures"),
-    UI("ui.atlas", "ui", true)
+    REQUIRED("required.atlas", "ui", true),
+    UI("ui.atlas", "ui")
 }
 
 enum class SoundAsset(

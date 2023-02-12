@@ -6,24 +6,24 @@ import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.graphics.g2d.SpriteBatch
 import com.badlogic.gdx.scenes.scene2d.Stage
 import com.badlogic.gdx.utils.viewport.FitViewport
-import com.matthias.assets.BitmapFontAsset
+import com.matthias.assets.BitmapFontAsset.FONT_DEFAULT
+import com.matthias.assets.BitmapFontAsset.FONT_LARGE_GRADIENT
 import com.matthias.assets.ShaderProgramAsset
 import com.matthias.assets.TextureAsset.BACKGROUND
-import com.matthias.assets.TextureAtlasAsset
 import com.matthias.assets.TextureAtlasAsset.GAME_GRAPHICS
+import com.matthias.assets.TextureAtlasAsset.REQUIRED
 import com.matthias.audio.AudioService
 import com.matthias.audio.DefaultAudioService
 import com.matthias.ecs.system.*
 import com.matthias.event.GameEventManager
 import com.matthias.screen.LoadingScreen
-import com.matthias.ui.createSkin
+import com.matthias.ui.setupDefaultSkin
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
 import ktx.app.KtxGame
 import ktx.app.KtxScreen
 import ktx.assets.async.AssetStorage
 import ktx.async.KtxAsync
-import ktx.collections.gdxArrayOf
 import ktx.log.logger
 
 private val LOG = logger<DarkMatterGame>()
@@ -80,14 +80,17 @@ class DarkMatterGame : KtxGame<KtxScreen>() {
 
         LOG.debug { "Creating DarkMatterGame" }
 
-        val assetRefs = gdxArrayOf(
-            TextureAtlasAsset.values().filter { it.isSkinAtlas }.map { assets.loadAsync(it.descriptor) },
-            BitmapFontAsset.values().map { assets.loadAsync(it.descriptor) }
-        ).flatten()
+        val requiredAssets = listOf(
+            assets.loadAsync(REQUIRED.descriptor),
+            assets.loadAsync(FONT_LARGE_GRADIENT.descriptor),
+            assets.loadAsync(FONT_DEFAULT.descriptor)
+        )
 
         KtxAsync.launch {
-            assetRefs.joinAll()
-            createSkin(assets)
+            requiredAssets.joinAll()
+
+            setupDefaultSkin(assets)
+
             addScreen(LoadingScreen(this@DarkMatterGame))
             setScreen<LoadingScreen>()
         }
